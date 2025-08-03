@@ -1,11 +1,15 @@
 package com.example.machinecodingroundapp.di
 
+import android.content.Context
+import com.example.machinecodingroundapp.data.local.PokemonDao
+import com.example.machinecodingroundapp.data.local.PokemonLocalDb
 import com.example.machinecodingroundapp.data.remote.PokemonApiService
 import com.example.machinecodingroundapp.repositories.PokemonRepository
 import com.example.machinecodingroundapp.repositories.PokemonRepositoryImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -35,7 +39,14 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun providesPokemonRepository(pokemonApiService: PokemonApiService): PokemonRepository {
-        return PokemonRepositoryImpl(pokemonApiService)
+    fun providesPokemonDatabase(@ApplicationContext context: Context): PokemonDao {
+        return PokemonLocalDb.getInstance(context).pokemonDao()
     }
+
+    @Provides
+    @Singleton
+    fun providesPokemonRepository(pokemonApiService: PokemonApiService,pokemonDao: PokemonDao): PokemonRepository {
+        return PokemonRepositoryImpl(pokemonApiService,pokemonDao)
+    }
+
 }

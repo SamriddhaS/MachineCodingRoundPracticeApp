@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,14 +32,18 @@ class PokemonListViewModel
 
     init {
         loadPokemonWithPagination()
+        viewModelScope.launch {
+            repository.observePokemonList().collectLatest{
+                _pokemonList.value = it
+            }
+        }
     }
 
     fun loadPokemonWithPagination() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                val list = repository.getPokemonList(loadNumber, pageNo)
-                _pokemonList.value += list
+                repository.loadPokemonList(loadNumber, pageNo)
                 pageNo++
                 _isLoading.value = false
             } catch (e: Exception) {
