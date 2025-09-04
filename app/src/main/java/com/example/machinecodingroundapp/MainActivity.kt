@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import com.example.machinecodingroundapp.ui.screens.AppNavGraph
 import com.example.machinecodingroundapp.ui.theme.MachineCodingRoundAppTheme
 import com.example.machinecodingroundapp.ui.screens.PokemonListScreen
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MachineCodingRoundAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PokemonListScreen(
+                    AppNavGraph(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
