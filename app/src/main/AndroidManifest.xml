@@ -24,6 +24,24 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <intent-filter>
+
+                <!-- Specify the ACTION_VIEW intent action so that the intent filter can be reached from Google Search -->
+                <action android:name="android.intent.action.VIEW" />
+
+                <!-- Include the BROWSABLE category. It is required in order for the intent filter to be accessible from a web browser. -->
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Also include the DEFAULT category. This allows your app to respond to implicit intents. -->
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data
+                    android:scheme="pokemonapp"
+                    android:host="details"
+                    />
+
+            </intent-filter>
         </activity>
     </application>
 
