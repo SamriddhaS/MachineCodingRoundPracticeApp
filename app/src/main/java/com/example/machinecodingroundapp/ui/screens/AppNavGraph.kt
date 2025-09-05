@@ -1,18 +1,19 @@
 package com.example.machinecodingroundapp.ui.screens
 
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 
-sealed class AppRoutes(val route: String){
+sealed class AppRoutes(val route:String){
     object PokemonListScreen: AppRoutes("home")
-    object PokemonDetailsScreen: AppRoutes("details/{pokemonId}/{pokemonName}"){
-
-    }
+    object PokemonDetailsScreen: AppRoutes("details")
 }
 
 @Composable
@@ -26,7 +27,21 @@ fun AppNavGraph(
         }
         composable(
             route = AppRoutes.PokemonDetailsScreen.route,
-            deepLinks = listOf(navDeepLink { uriPattern = "pokemonapp://details/{pokemonId}/{pokemonName}" })
+            deepLinks = listOf(navDeepLink {
+                uriPattern = "https://pokemonapp.dev/details/{pokemonId}?pokemonName={pokemonName}"
+                action = Intent.ACTION_VIEW
+            }),
+            arguments = listOf(
+                navArgument("pokemonId"){
+                    type = NavType.StringType
+                    defaultValue = ""
+                },
+                navArgument("pokemonName"){
+                    type = NavType.StringType
+                    defaultValue = ""
+                    nullable = true
+                }
+            )
         ) { backStackEntry ->
             val pokemonId = backStackEntry.arguments?.getString("pokemonId")?:""
             val pokemonName = backStackEntry.arguments?.getString("pokemonName")?:""
