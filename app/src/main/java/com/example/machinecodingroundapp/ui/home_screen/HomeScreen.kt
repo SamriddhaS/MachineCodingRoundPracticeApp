@@ -1,5 +1,6 @@
 package com.example.machinecodingroundapp.ui.home_screen
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -27,11 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.machinecodingroundapp.domain.model.Video
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.compose.foundation.pager.HorizontalPager // And this one
 
 @Composable
 fun HomeScreen(
@@ -153,44 +160,88 @@ fun CarouselSection(
     videos: List<Video>,
     onVideoClicked: (Video) -> Unit
 ) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    val pagerState = androidx.compose.foundation.pager.rememberPagerState(pageCount = { videos.size })
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
     ) {
-        items(videos, key = {it.id}) { video ->
+        HorizontalPager(
+            state = pagerState,
+            pageSpacing = 4.dp,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+        ) { page ->
+
+            val video = videos[page]
+
             Box(
                 modifier = Modifier
-                    .width(280.dp)
-                    .height(160.dp)
-                    .clickable {
-                        onVideoClicked(video)
-                    }
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { onVideoClicked(video) }
             ) {
-
                 AsyncImage(
-                    model = ImageRequest
-                        .Builder(LocalContext.current)
+                    model = ImageRequest.Builder(LocalContext.current)
                         .data(video.thumbnailUrl)
                         .crossfade(true)
                         .build(),
                     contentDescription = video.title,
-                    modifier = Modifier
-                        .fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
                 )
 
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.3f)),
+                        .fillMaxWidth()
+                        .fillMaxSize(0.5f)
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.95f))
+                            )
+                        )
+                        .align(Alignment.BottomEnd)
+                    ,
                     contentAlignment = Alignment.BottomStart
                 ) {
                     Text(
                         text = video.title,
                         color = Color.White,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
+                        modifier = Modifier.padding(8.dp),
                         maxLines = 1,
-                        modifier = Modifier.padding(8.dp)
+                        textAlign = TextAlign.Center
                     )
                 }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Dot indicator
+        LazyRow(
+            modifier = Modifier.align(Alignment.CenterHorizontally),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            userScrollEnabled = false
+        ) {
+            items(count = pagerState.pageCount, key = { it }) { index ->
+
+                val isSelected = pagerState.currentPage == index
+
+                val width by animateDpAsState(
+                    targetValue = if (isSelected) 24.dp else 8.dp,
+                    label = "IndicatorWidth" // Optional label for debugging
+                )
+
+                Box(
+                    modifier = Modifier
+                        .height(8.dp)
+                        .width(width) // Use the animated width
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                        )
+                )
             }
         }
     }
@@ -202,35 +253,72 @@ fun VideoRowItem(
     onVideoClicked: (Video) -> Unit
 ) {
     Row(
+        // Use a clip with a shape for a softer, more modern container
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp)
-            .clickable {
-                onVideoClicked(video)
-            }
+            .height(100.dp) // Slightly reduced height for a denser list
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onVideoClicked(video) }
+            .padding(8.dp), // Add padding inside the clickable area
+        verticalAlignment = Alignment.CenterVertically // Align all children vertically
     ) {
-        AsyncImage(
-            model = ImageRequest
-                .Builder(LocalContext.current)
-                .data(video.thumbnailUrl)
-                .crossfade(true)
-                .build(),
-            contentDescription = video.title,
+        // --- Thumbnail Section ---
+        Box(
             modifier = Modifier
-                .width(150.dp)
+                .width(140.dp)
                 .fillMaxHeight()
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(
-            verticalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxHeight()
+                .clip(RoundedCornerShape(8.dp)), // Round the thumbnail corners
+            contentAlignment = Alignment.BottomEnd // Position the duration at the bottom right
         ) {
-            Text(text = video.title, fontSize = 16.sp)
-            Text(text = video.description, maxLines = 2, fontSize = 13.sp)
-            Text(text = "Duration: ${video.duration}", fontSize = 12.sp)
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(video.thumbnailUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = video.title,
+                contentScale = ContentScale.Crop, // Use Crop for better fitting
+                modifier = Modifier.fillMaxSize()
+            )
+
+            // Add a small background behind the duration text for readability
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+            ) {
+                Text(
+                    text = video.duration,
+                    color = Color.White,
+                    fontSize = 10.sp,
+                    style = MaterialTheme.typography.labelSmall // Use theme typography
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(16.dp)) // Increased spacing for better separation
+
+        // --- Text Details Section ---
+        Column(
+            // No need for SpaceBetween, let the natural spacing work
+            modifier = Modifier.fillMaxHeight(),
+            verticalArrangement = Arrangement.Top // Align text to the top
+        ) {
+            Text(
+                text = video.title,
+                style = MaterialTheme.typography.titleMedium, // Use a more prominent style
+                maxLines = 2
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = video.description,
+                style = MaterialTheme.typography.bodySmall, // Softer style for description
+                maxLines = 2,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // De-emphasize
+            )
         }
     }
 }
+
 
