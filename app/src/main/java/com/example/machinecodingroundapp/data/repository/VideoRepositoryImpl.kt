@@ -16,7 +16,6 @@ class VideoRepositoryImpl @Inject constructor(
 ) : VideoRepository {
 
     override fun getVideos(): Flow<List<Video>> {
-        // Return DB first (offline-first)
         return videoDao.getAllVideos()
             .map { entities ->
                 entities.map { it.toDomain() }
@@ -33,7 +32,7 @@ class VideoRepositoryImpl @Inject constructor(
 
         } catch (e: Exception) {
             // Log, handle API failure, fallback to DB
-            e.printStackTrace()
+            throw e
         }
     }
 

@@ -15,7 +15,7 @@ fun SplashScreen(
     onNavigateHome: () -> Unit
 ) {
     LaunchedEffect(Unit) {
-        delay(2000) // 2 seconds
+        delay(1000) // 1 seconds
         onNavigateHome()
     }
 

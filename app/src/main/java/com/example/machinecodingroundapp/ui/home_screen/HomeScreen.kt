@@ -29,6 +29,7 @@ import com.example.machinecodingroundapp.domain.model.Video
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
@@ -98,8 +99,7 @@ fun HomeScreen(
         is VideoScreenState.Loaded -> {
             val state = uiState as VideoScreenState.Loaded
             VideoListContent(
-                videos = state.videos,
-                randomVideos = state.carouselVideos,
+                loadedState = state,
                 onVideoClicked = { video ->
                     viewModel.onEvent(VideoUiEvent.OnVideoClicked(video))
                 }
@@ -111,24 +111,39 @@ fun HomeScreen(
 
 @Composable
 fun VideoListContent(
-    videos: List<Video>,
-    randomVideos: List<Video>,
+    loadedState: VideoScreenState.Loaded,
     onVideoClicked: (Video) -> Unit
 ) {
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(12.dp)
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        item {
-            CarouselSection(randomVideos, onVideoClicked = onVideoClicked)
-            Spacer(modifier = Modifier.height(16.dp))
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp)
+        ) {
+
+            item {
+                CarouselSection(loadedState.carouselVideos, onVideoClicked = onVideoClicked)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            items(loadedState.videos, key = {it.id}) { video ->
+                VideoRowItem(video, onVideoClicked = onVideoClicked)
+                Spacer(modifier = Modifier.height(12.dp))
+            }
+
         }
 
-        items(videos) { video ->
-            VideoRowItem(video)
-            Spacer(modifier = Modifier.height(12.dp))
+        if (loadedState.isOffline){
+            Text(
+                text = "You are offline",
+                color = Color.White,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Red)
+                    .align(Alignment.BottomCenter)
+            )
         }
     }
 }
@@ -141,7 +156,7 @@ fun CarouselSection(
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        items(videos) { video ->
+        items(videos, key = {it.id}) { video ->
             Box(
                 modifier = Modifier
                     .width(280.dp)
@@ -182,11 +197,17 @@ fun CarouselSection(
 }
 
 @Composable
-fun VideoRowItem(video: Video) {
+fun VideoRowItem(
+    video: Video,
+    onVideoClicked: (Video) -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(110.dp)
+            .clickable {
+                onVideoClicked(video)
+            }
     ) {
         AsyncImage(
             model = ImageRequest
