@@ -36,4 +36,9 @@ class VideoRepositoryImpl @Inject constructor(
             e.printStackTrace()
         }
     }
+
+    override suspend fun getVideoById(videoId: String): Video? {
+        return videoDao.getVideoById(videoId)?.toDomain()
+    }
+
 }

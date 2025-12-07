@@ -1,4 +1,4 @@
-package com.example.machinecodingroundapp.ui
+package com.example.machinecodingroundapp.ui.splash_screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

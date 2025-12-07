@@ -1,4 +1,4 @@
-package com.example.machinecodingroundapp.ui.home
+package com.example.machinecodingroundapp.ui.home_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

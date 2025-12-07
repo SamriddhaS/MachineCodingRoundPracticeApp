@@ -1,6 +1,7 @@
-package com.example.machinecodingroundapp.ui.home
+package com.example.machinecodingroundapp.ui.home_screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,16 +27,33 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.machinecodingroundapp.domain.model.Video
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 
 @Composable
 fun HomeScreen(
-    viewModel: VideoViewModel
+    viewModel: VideoViewModel,
+    onNavigateToPlayerScreen:(String)->Unit
 ) {
 
     val uiState by viewModel.screenState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        /*
+        * We need to handel the navigation related events in the Screen and not in view model.
+        * */
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is VideoUiEvent.OnVideoClicked -> {
+                    val clickedVideo = event.video
+                    onNavigateToPlayerScreen(clickedVideo.id)
+                }
+                else -> {}
+            }
+        }
+    }
 
     when(uiState){
         is VideoScreenState.Loading -> {
@@ -82,6 +100,9 @@ fun HomeScreen(
             VideoListContent(
                 videos = state.videos,
                 randomVideos = state.carouselVideos,
+                onVideoClicked = { video ->
+                    viewModel.onEvent(VideoUiEvent.OnVideoClicked(video))
+                }
             )
         }
 
@@ -91,7 +112,8 @@ fun HomeScreen(
 @Composable
 fun VideoListContent(
     videos: List<Video>,
-    randomVideos: List<Video>
+    randomVideos: List<Video>,
+    onVideoClicked: (Video) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier
@@ -100,7 +122,7 @@ fun VideoListContent(
     ) {
 
         item {
-            CarouselSection(randomVideos)
+            CarouselSection(randomVideos, onVideoClicked = onVideoClicked)
             Spacer(modifier = Modifier.height(16.dp))
         }
 
@@ -112,7 +134,10 @@ fun VideoListContent(
 }
 
 @Composable
-fun CarouselSection(videos: List<Video>) {
+fun CarouselSection(
+    videos: List<Video>,
+    onVideoClicked: (Video) -> Unit
+) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -121,6 +146,9 @@ fun CarouselSection(videos: List<Video>) {
                 modifier = Modifier
                     .width(280.dp)
                     .height(160.dp)
+                    .clickable {
+                        onVideoClicked(video)
+                    }
             ) {
 
                 AsyncImage(

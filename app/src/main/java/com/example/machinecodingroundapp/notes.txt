@@ -68,3 +68,17 @@ com.yourappname
     ├── NetworkResult.kt   (sealed class for API result)
     ├── Constants.kt
     └── Extensions.kt
+
+
+##################### Video Player ###################################
+ui/
+ ├── home/
+ └── video/
+      ├── VideoPlayerScreen.kt
+      ├── VideoPlayerViewModel.kt
+      ├── VideoPlayerUiState.kt
+      ├── VideoPlayerAction.kt
+      └── components/
+           ├── VideoPlayerView.kt       ← ExoPlayer setup
+           ├── VideoInfoSection.kt      ← Title, author, views
+           ├── RelatedVideosList.kt     ← LazyColumn of related videos
